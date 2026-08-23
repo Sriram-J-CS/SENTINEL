@@ -1,98 +1,133 @@
-# 🛡️ Sentinel — Behavioral Risk Layer for Autonomous AI Agent Payments (x402 / Algorand AVM)
+# Sentinel — Behavioral Risk Layer for Autonomous AI Agent Payments (x402 / Algorand AVM)
 
-[![Algorand TestNet](https://img.shields.io/badge/Algorand-TestNet%20App%20%23769717602-0052FF?style=flat-square&logo=algorand)](https://lora.algokit.io/testnet/application/769717602)
-[![x402 Protocol](https://img.shields.io/badge/Protocol-x402%20HTTP%20Payment-10B981?style=flat-square)](https://facilitator.goplausible.xyz)
-[![USDC ASA](https://img.shields.io/badge/USDC%20ASA-10458941-00D2FF?style=flat-square)](https://lora.algokit.io/testnet/asset/10458941)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
-
-> **Sentinel** is an enterprise-grade behavioral risk and policy enforcement layer for autonomous AI agents executing payments via the **x402 HTTP protocol** on **Algorand**.
+Algorand TestNet App ID: 769717602  
+Protocol Standard: x402 HTTP Payment Protocol  
+Asset Standard: USDC TestNet ASA #10458941  
+License: MIT  
 
 ---
 
-## 🎯 Target Audience & Purpose
+## Executive Summary
 
-**Sentinel** was built to solve a critical trust gap in autonomous agent commerce. As AI agents gain access to web wallets and procurement APIs, existing static allowlists fail to protect against budget exhaustion, merchant price drift, and prompt-injection attacks.
+Sentinel is an enterprise behavioral risk layer and automated policy enforcement engine designed for autonomous AI agent payments on the Algorand blockchain.
 
-Sentinel serves three core ecosystems:
-
-1. **AI Agent Developers & Operators**: Safeguard autonomous procurement workflows with 30-day statistical spend envelopes and real-time z-score anomaly detection.
-2. **Resource Server Merchants**: Safely monetize compute, data pipelines, and API endpoints via standard HTTP 402 challenges on Algorand.
-3. **Hackathon Judges & Protocol Reviewers**: Experience a complete, production-ready implementation of deep Algorand AVM smart contract integration (`App #769717602`), 64-byte Box Storage lineage tracking, and real GoPlausible microAlgo/USDC settlement.
+As autonomous AI agents acquire wallet access and interact with web APIs, traditional hardcoded spending limits fail to prevent budget drain, price drift from malicious sellers, or prompt-injection exploits. Sentinel sits as an intelligent interceptor between AI agents and resource servers, scoring both sides of every transaction in real time and logging immutable decision proofs to Algorand AVM Box Storage.
 
 ---
 
-## ✨ Key Architectural Innovations
+## Target Audience and Key Stakeholders
+
+1. AI Agent Developers and Operators: Prevent budget exhaustion, runaway loops, and unauthorized payment delegation through rolling statistical spend envelopes.
+2. Resource Server Merchants: Monetize APIs securely by returning HTTP 402 Payment Required challenges that resolve instantly over Algorand microAlgo/USDC rails.
+3. Protocol Reviewers and Hackathon Judges: Verify deep Algorand AVM smart contract integration, 64-byte Box Storage state receipts, and two-sided risk scoring.
+
+---
+
+## Core Risk Engines
 
 ### 1. Per-Agent 30-Day Behavioral Baselines
-Rather than enforcing rigid static caps, Sentinel calculates continuous 30-day rolling statistical envelopes ($\mu \pm 2\sigma$) per agent category. Transactions exceeding expected spend velocity or category variance trigger automatic escalation or blocks.
+Rather than relying on static caps, Sentinel calculates continuous 30-day statistical spend envelopes per agent category. Transactions exceeding expected spend velocity or standard deviation bounds trigger automatic escalation or blocking.
 
 ### 2. Two-Sided Merchant Scoring
-Most policy guards only inspect the buyer. Sentinel is the **first to score the merchant endpoint**, detecting post-registration price drift, bait-and-switch pricing, and rapid endpoint churn before the agent signs a transaction.
+Standard payment guards only evaluate the buyer. Sentinel evaluates both the buying agent and the selling merchant endpoint, detecting post-registration price drift, endpoint churn, and unexpected price increases before funds are signed.
 
 ### 3. Cross-Agent Fleet Correlation
-Isolated log analysis misses coordinated attack vectors. Sentinel correlates payment attempts across entire agent fleets in real time. When multiple independent agents converge on an unrated endpoint within seconds, Sentinel flags the pattern as a potential prompt-injection exploit.
+Sentinel monitors activity across entire fleets of autonomous agents. When multiple independent agents suddenly converge on an unrated endpoint within a short time window, Sentinel flags the pattern as a potential coordinated prompt-injection attack.
 
 ### 4. On-Chain AVM Box Storage Lineage
-Every payment decision (`APPROVE`, `BLOCK`, `ESCALATE`) is committed to **Algorand AVM Box Storage** under **App `#769717602`**. This creates a 64-byte, tamper-evident binary proof that downstream peer agents and facilitators can independently verify on-chain.
+Every policy decision (APPROVE, BLOCK, ESCALATE) is committed to Algorand Box Storage under Application ID #769717602. This produces a 64-byte tamper-evident proof readable by peer agents and facilitators without relying on a central database.
 
-### 5. Native Algorand USDC Asset Transfer (`axfer`)
-Sentinel strictly constructs and verifies standard Algorand **Asset Transfer (`axfer`)** transactions using TestNet USDC ASA `#10458941`, ensuring real economic settlement between distinct client and receiving wallets with zero self-payment bugs.
+### 5. Native Algorand USDC Asset Transfer (axfer)
+Sentinel constructs and validates standard Algorand Asset Transfer (axfer) transactions targeting USDC ASA #10458941 between distinct client and receiving wallet addresses.
 
 ---
 
-## 🔄 End-to-End x402 Lifecycle
+## System Architecture and Workflow
+
+### Process Flow Diagram
 
 ```
-[ AI Agent ] ──(1) Unpaid HTTP GET / POST ──> [ Resource Server / Sentinel Interceptor ]
-                                                           │
-[ AI Agent ] <──(2) HTTP 402 Payment Required ─────────────┘
-  │ (Contains price, receiving AVM_ADDRESS, ASA ID #10458941)
-  │
-  ├─── (3) Sentinel Risk Engine Evaluates:
-  │         • 30-Day Agent Baseline Z-Score
-  │         • Two-Sided Merchant Price Drift
-  │         • Cross-Agent Fleet Correlation
-  │
-  ├─── (4) If Approved: Build & Sign Algorand USDC Asset Transfer ("axfer")
-  │
-  └─── (5) Submit Tx ──> [ GoPlausible Facilitator & Algorand Node ]
-                             │
-                             ├── Settled On-Chain in < 500ms
-                             └── Written to AVM Box Storage (App #769717602)
++------------------+         +------------------+         +-----------------------+
+|     AI Agent     |         | Resource Server  |         | Sentinel Risk Engine  |
++------------------+         +------------------+         +-----------------------+
+         |                            |                               |
+         |  1. GET /resource/compute  |                               |
+         |--------------------------->|                               |
+         |                            |                               |
+         |  2. HTTP 402 Challenge     |                               |
+         |<---------------------------|                               |
+         |  (PayTo, Price, ASA ID)    |                               |
+         |                            |                               |
+         |  3. Intercept & Evaluate Request                           |
+         |----------------------------------------------------------->|
+         |                                                            |
+         |                            |   Evaluate Baseline Z-Score   |
+         |                            |   Score Merchant Price Drift  |
+         |                            |   Check Fleet Correlation     |
+         |                            |                               |
+         |  4. Risk Assessment Result |                               |
+         |<-----------------------------------------------------------|
+         |  (APPROVE / BLOCK / ESCALATE)                              |
+         |                            |                               |
+         |  5. Build & Sign Algorand Asset Transfer ("axfer")          |
+         |----------------------------------------------------------->|
+         |                            |                               |
+         |                            |   6. Submit to Facilitator    |
+         |                            |   & Write to AVM Box Storage  |
+         |                            |   (App ID #769717602)         |
+         |                            |                               |
+         |  7. HTTP 200 OK + Resource |                               |
+         |<---------------------------|                               |
 ```
 
 ---
 
-## 💻 Tech Stack
+## Step-by-Step Execution Sequence
 
-* **Smart Contract Layer**: TEAL / Algorand AVM (Application ID: `#769717602`, Box Storage receipts)
-* **Backend Engine**: Node.js, Express, TypeScript, `@algorandfoundation/algokit-utils`, `algosdk`
-* **Frontend Workstation**: React, TypeScript, Vite, Tailwind CSS, Recharts, Lucide Icons
-* **Protocol Standards**: x402 HTTP Standard, GoPlausible Facilitator API, USDC TestNet ASA `#10458941`
-* **Deployment**: Vercel Serverless & Static CDN
+1. Request Initiation: An autonomous AI agent sends an unpaid HTTP request to a protected resource endpoint.
+2. HTTP 402 Challenge: The server responds with HTTP 402 Payment Required, supplying price details, recipient AVM_ADDRESS, and USDC ASA ID #10458941.
+3. Interception and Evaluation: Sentinel's interceptor evaluates three dimensions concurrently:
+   - Agent 30-Day Spend Velocity (Z-Score calculation)
+   - Merchant Price Drift and Endpoint Reputation
+   - Cross-Agent Fleet Convergence Rate
+4. Policy Decision:
+   - APPROVE: Payment proceeds to signing.
+   - BLOCK: Payment is rejected due to policy breach.
+   - ESCALATE: Requires human-in-the-loop confirmation.
+5. On-Chain Settlement: The client wallet signs a standard Algorand Asset Transfer transaction (`axfer`) and submits it via the GoPlausible facilitator.
+6. AVM Receipt Commitment: The smart contract updates 64-byte Box Storage on Application #769717602, recording cumulative spend and decision hashes.
+7. Resource Unlock: Upon transaction verification, the resource server unlocks the requested API endpoint.
 
 ---
 
-## 🛠️ Quickstart & Local Setup
+## Component Breakdown
+
+- `/frontend`: React, TypeScript, Vite, Tailwind CSS, Recharts dashboard workstation.
+- `/backend`: Node.js Express server, Algorand SDK integration, baseline calculation engines, and JSON database persistence.
+- `/api`: Vercel serverless function entrypoint for production routing.
+
+---
+
+## Local Setup and Quickstart
 
 ### Prerequisites
-* Node.js v18+ and `npm`
-* Access to internet (for Algonode TestNet RPC endpoints)
+- Node.js version 18 or higher
+- npm package manager
 
-### 1. Clone & Install Dependencies
+### 1. Clone Repository and Install Dependencies
+
 ```bash
 git clone https://github.com/Sriram-J-CS/SENTINEL.git
 cd SENTINEL
 
-# Install backend dependencies
 npm install --prefix backend
-
-# Install frontend dependencies
 npm install --prefix frontend
 ```
 
 ### 2. Configure Environment Variables
-The repository comes pre-configured with TestNet settings in `backend/.env`:
+
+The default configuration is defined in `backend/.env`:
+
 ```env
 PORT=4002
 SENTINEL_APP_ID=769717602
@@ -103,49 +138,30 @@ FACILITATOR_URL=https://facilitator.goplausible.xyz
 AVM_ADDRESS=OAFMDTGYYN7TSHDL3LGFNCGY47F6XOVW47ENBBTHV4UVC5RNDDEYJDULBU
 ```
 
-### 3. Run Locally
+### 3. Start Development Servers
 
-Start the Backend API Server (Port 4002):
+Terminal 1 (Backend API Server):
 ```bash
 npm run backend
 ```
 
-In a new terminal window, start the Frontend Workstation (Port 3000):
+Terminal 2 (Frontend Workstation Dashboard):
 ```bash
 npm run dev --prefix frontend
 ```
 
-Open **[http://localhost:3000](http://localhost:3000)** in your browser to access the Sentinel Workstation.
+Open `http://localhost:3000` in your web browser.
 
 ---
 
-## 🧪 Real On-Chain Payment Test
+## On-Chain Contract Reference
 
-Execute a real end-to-end x402 payment flow against Algorand TestNet:
-```bash
-cd backend
-npx tsx src/testRealPayment.ts
-```
-
-This test will:
-1. Issue an unpaid HTTP request to `/policy/check`.
-2. Intercept the `HTTP 402 Payment Required` challenge.
-3. Construct a valid `axfer` (Asset Transfer) transaction for USDC ASA `#10458941` to `AVM_ADDRESS`.
-4. Submit the transaction to Algorand TestNet and verify the confirmed transaction hash on **Lora Explorer**.
+- Algorand TestNet Application ID: #769717602
+- Lora Explorer: https://lora.algokit.io/testnet/application/769717602
+- Pera Explorer: https://explorer.perawallet.app/application/769717602?network=testnet
 
 ---
 
-## 🔍 On-Chain Verification & Explorer Links
+## License
 
-* **Algorand TestNet Smart Contract Application**:  
-  👉 **[Lora Explorer: App #769717602](https://lora.algokit.io/testnet/application/769717602)**  
-  👉 **[Pera Explorer: App #769717602](https://explorer.perawallet.app/application/769717602?network=testnet)**
-
-* **Live Verified TestNet Transaction**:  
-  👉 **[Lora Explorer Tx Receipt](https://lora.algokit.io/testnet/transaction/4T65SEAO34WP6HRWWY7WGZCTVUUOP26VKKY4WPV2DGZMNGD33NEA)**
-
----
-
-## 📜 License
-
-Distributed under the **MIT License**. See `LICENSE` for more information.
+This project is licensed under the MIT License. See `LICENSE` for details.
