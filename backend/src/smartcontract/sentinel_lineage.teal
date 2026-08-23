@@ -1,0 +1,151 @@
+#pragma version 8
+
+// Check creation call (txn ApplicationID == 0)
+txn ApplicationID
+int 0
+==
+bnz handle_create
+
+// Route NoOp calls by ApplicationArgs[0]
+txna ApplicationArgs 0
+byte "init_lineage"
+b==
+bnz handle_init_lineage
+
+txna ApplicationArgs 0
+byte "record_hop"
+b==
+bnz handle_record_hop
+
+txna ApplicationArgs 0
+byte "record_escalation"
+b==
+bnz handle_record_escalation
+
+err
+
+handle_create:
+int 1
+return
+
+handle_init_lineage:
+// Args: ["init_lineage", rootTaskId, authorizedBudget (8 bytes)]
+// 1. Create box of size 64 bytes
+txna ApplicationArgs 1
+int 64
+box_create
+pop
+
+// 2. Write authorizedBudget at offset 0
+txna ApplicationArgs 1
+int 0
+txna ApplicationArgs 2
+box_replace
+
+// 3. Write 0 for cumulative spend at offset 8
+txna ApplicationArgs 1
+int 8
+byte 0x0000000000000000
+box_replace
+
+// 4. Write 0 for hop count at offset 16
+txna ApplicationArgs 1
+int 16
+byte 0x0000000000000000
+box_replace
+
+// 5. Write 0 for status (ACTIVE) at offset 24
+txna ApplicationArgs 1
+int 24
+byte 0x0000000000000000
+box_replace
+
+// 6. Write zero hash at offset 32 (32 bytes)
+txna ApplicationArgs 1
+int 32
+byte 0x0000000000000000000000000000000000000000000000000000000000000000
+box_replace
+
+int 1
+return
+
+handle_record_hop:
+// Args: ["record_hop", rootTaskId, amount (8 bytes), hopCount (8 bytes), decisionHash (32 bytes)]
+// Read existing box
+txna ApplicationArgs 1
+box_get
+pop // discard exists flag, box bytes on stack
+
+// Extract authorizedBudget (bytes 0..8) and current spend (bytes 8..16)
+dup
+int 0
+int 8
+extract3
+btoi // authorizedBudget uint64
+
+swap
+int 8
+int 8
+extract3
+btoi // currentSpend uint64
+
+// Add amount
+txna ApplicationArgs 2
+btoi
++ // newSpend = currentSpend + amount
+
+// Store new spend to box
+dup
+itob // newSpend bytes
+txna ApplicationArgs 1
+int 8
+uncover 2
+box_replace
+
+// Update hop count
+txna ApplicationArgs 1
+int 16
+txna ApplicationArgs 3
+box_replace
+
+// Check if newSpend > authorizedBudget
+>
+bnz set_blocked
+
+// Status: ACTIVE (0)
+txna ApplicationArgs 1
+int 24
+byte 0x0000000000000000
+box_replace
+b update_hash
+
+set_blocked:
+// Status: BLOCKED_OVERBUDGET (1)
+txna ApplicationArgs 1
+int 24
+byte 0x0000000000000001
+box_replace
+
+update_hash:
+// Update decision hash
+txna ApplicationArgs 1
+int 32
+txna ApplicationArgs 4
+box_replace
+
+int 1
+return
+
+handle_record_escalation:
+// Args: ["record_escalation", rootTaskId, newStatus (8 bytes)]
+txna ApplicationArgs 1
+box_get
+pop
+pop
+txna ApplicationArgs 1
+int 24
+txna ApplicationArgs 2
+box_replace
+
+int 1
+return
