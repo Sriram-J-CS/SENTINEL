@@ -46,18 +46,18 @@
   "baselines": [
     {
       "agentId": "agent_alpha_procure",
-      "meanAmount": 10.25,
-      "stddevAmount": 1.14,
+      "meanAmount": 10.29,
+      "stddevAmount": 1.06,
       "minAmount": 8.62,
       "maxAmount": 12.03,
-      "sampleCount": 18,
+      "sampleCount": 19,
       "historicalCategories": [
         "cloud_hosting",
         "data_pipeline",
         "api_compute"
       ],
       "callsPerHourAvg": 1,
-      "lastUpdated": "2026-08-23T10:12:19.494Z"
+      "lastUpdated": "2026-08-23T11:18:14.233Z"
     },
     {
       "agentId": "agent_beta_data",
@@ -145,16 +145,16 @@
       "currency": "USD",
       "merchantCategory": "api_compute",
       "recipient": "vault_resource_node",
-      "decision": "escalate",
+      "decision": "approve",
       "anomalyScore": 0.55,
       "deviationScore": 0.55,
       "status": "escalated",
-      "reason": "Transaction amount ($10.50) and category standard for agent profile (z=0.2) | Predictive cascade warning: Projected total chain exposure ($52.50) would exceed authorized budget ($40.00) if 4 remaining hops average $10.50/hop | Intent misalignment: Merchant category \"api_compute\" scores 42% alignment with task description \"Procure compute API resources under $15 per call\"",
+      "reason": "Human Supervisor APPROVED transaction after escalation. On-chain Box updated.",
       "triggeredRules": [
         "PREDICTIVE_BUDGET_EXCEEDED",
         "INTENT_MISALIGNMENT"
       ],
-      "txId": "UVWTHNWHJHRK6TWL4Y7BM3YLS6PFAG7TV74QOC2YPQHT2Y5JLP7Q",
+      "txId": "RSZOGZ4CXNBP5VJ55WADB745HIYWKZ7P5ACLSY4JXUSMEJVUSZ4Q",
       "onChainVerified": true,
       "zScore": 0.22,
       "intentAlignmentScore": 42,
