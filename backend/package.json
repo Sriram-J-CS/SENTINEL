@@ -11,9 +11,6 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
-    "@x402-avm/avm": "^0.1.0",
-    "@x402-avm/core": "^0.1.0",
-    "@x402-avm/express": "^0.1.0",
     "algosdk": "^3.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
