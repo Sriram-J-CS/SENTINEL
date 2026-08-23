@@ -1,0 +1,6 @@
+/api/* https://sentinel-i2u4.onrender.com/api/:splat 200
+/policy/* https://sentinel-i2u4.onrender.com/policy/:splat 200
+/escalation/* https://sentinel-i2u4.onrender.com/escalation/:splat 200
+/resource/* https://sentinel-i2u4.onrender.com/resource/:splat 200
+/health https://sentinel-i2u4.onrender.com/health 200
+/* /index.html 200
